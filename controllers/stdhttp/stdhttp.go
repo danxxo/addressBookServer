@@ -1,11 +1,11 @@
 package stdhttp
 
 import (
+	psg "addressBookServer/gate/psg"
+	"addressBookServer/models/dto"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	psg "server-client/server/gate/psg"
-	"server-client/server/models/dto"
 
 	"github.com/pkg/errors"
 )

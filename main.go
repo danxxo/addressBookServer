@@ -1,9 +1,9 @@
 package main
 
 import (
+	controller "addressBookServer/controllers/stdhttp"
+	psg "addressBookServer/gate/psg"
 	"fmt"
-	controller "server-client/server/controllers/stdhttp"
-	psg "server-client/server/gate/psg"
 )
 
 func main() {

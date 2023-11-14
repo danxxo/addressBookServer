@@ -7,10 +7,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-const (
-	PHONE_CONST string = "0123456789"
-)
-
 func PhoneNormalize(phone string) (normalizedPhone string, err error) {
 	defer func() { err = errors.Wrap(err, "PhoneNormalize()") }()
 	var builder strings.Builder

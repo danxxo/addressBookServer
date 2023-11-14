@@ -1,9 +1,9 @@
 package postgres
 
 import (
+	dto "addressBookServer/models/dto"
 	"errors"
 	"reflect"
-	dto "server-client/server/models/dto"
 	"strconv"
 	"strings"
 	"text/template"

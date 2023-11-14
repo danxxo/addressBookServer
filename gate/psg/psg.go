@@ -8,8 +8,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pkg/errors"
 
-	dto "server-client/server/models/dto"
-	phoneHelper "server-client/server/pkg/phone"
+	dto "addressBookServer/models/dto"
+	phoneHelper "addressBookServer/pkg/phone"
 )
 
 type Psg struct {
