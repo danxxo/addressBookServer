@@ -15,17 +15,17 @@ func PhoneNormalize(phone string) (normalizedPhone string, err error) {
 
 	var first bool = true
 	for i := 0; i < len(phone); i++ {
-		curr_char := string(phone[i])
-		if _, err = strconv.Atoi(curr_char); err == nil {
+		currChar := string(phone[i])
+		if _, err = strconv.Atoi(currChar); err == nil {
 			if first {
-				if !(curr_char == "7" || curr_char == "8") {
+				if !(currChar == "7" || currChar == "8") {
 					err = errors.New("Number should be started with +7 or 8, but your is: " + phone)
 					return
 				}
 				first = false
 				continue
 			}
-			builder.WriteString(curr_char)
+			builder.WriteString(currChar)
 		}
 	}
 	normalizedPhone = builder.String()

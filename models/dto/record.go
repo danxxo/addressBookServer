@@ -10,3 +10,8 @@ type Record struct {
 }
 
 type Records []Record
+
+type Response struct {
+	Records      []Record `json:"records"`
+	ErrorMessage string   `json:"err"`
+}

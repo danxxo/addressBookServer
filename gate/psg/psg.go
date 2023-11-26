@@ -103,7 +103,7 @@ func (p *Psg) RecordUpdate(r dto.Record) (err error) {
 	defer func() { err = errors.Wrap(err, "psg.RecordUpdate()") }()
 
 	if r.Phone == "" {
-		err = errors.New(":Phone field is required")
+		err = errors.New("Phone field is required")
 		return
 	}
 
