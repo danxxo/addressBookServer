@@ -48,12 +48,18 @@ func (c *Controller) RecordAdd(w http.ResponseWriter, r *http.Request) {
 
 		// sending response
 		defer func() {
-			response := dto.Response{ErrorMessage: ""}
+			response := dto.Response{Error: "", Result: "add"}
+
+			// handle errors that occur because of client
 			if err != nil {
-				response.ErrorMessage = err.Error()
+				response.Error = err.Error()
+				response.Result = "error"
 				logger.LogError(err)
 			}
+
 			jsonResponse, err := json.Marshal(response)
+
+			// Internal error
 			if err != nil {
 				logger.LogError(err)
 			}
@@ -63,13 +69,13 @@ func (c *Controller) RecordAdd(w http.ResponseWriter, r *http.Request) {
 		rec := dto.Record{}
 		err = json.NewDecoder(r.Body).Decode(&rec)
 		if err != nil {
-			err = errors.Wrap(err, "stdhttp.RecordAdd():")
+			err = errors.Wrap(err, "stdhttp.RecordAdd()")
 			return
 		}
 
 		_, err = c.DB.RecordAdd(rec)
 		if err != nil {
-			err = errors.Wrap(err, "stdhttp.RecordAdd():")
+			err = errors.Wrap(err, "stdhttp.RecordAdd()")
 			return
 		}
 	}
@@ -90,16 +96,28 @@ func (c *Controller) RecordsGet(w http.ResponseWriter, r *http.Request) {
 
 		// sending response
 		defer func() {
-			response := dto.Response{ErrorMessage: ""}
-			response.Records = records
+			response := dto.Response{Error: "", Result: "get"}
+
 			if err != nil {
-				response.ErrorMessage = err.Error()
+				response.Error = err.Error()
+				response.Result = "error"
 				logger.LogError(err)
 			}
+
+			data, err := json.Marshal(records)
+			if err != nil {
+				response.Error = err.Error()
+				response.Result = "error"
+				logger.LogError(err)
+			}
+
+			response.Data = data
+
 			jsonResponse, err := json.Marshal(response)
 			if err != nil {
 				logger.LogError(err)
 			}
+
 			w.Write(jsonResponse)
 		}()
 
@@ -133,9 +151,11 @@ func (c *Controller) RecordUpdate(w http.ResponseWriter, r *http.Request) {
 
 		// sending response
 		defer func() {
-			response := dto.Response{ErrorMessage: ""}
+			response := dto.Response{Error: "", Result: "update"}
+
 			if err != nil {
-				response.ErrorMessage = err.Error()
+				response.Error = err.Error()
+				response.Result = "error"
 				logger.LogError(err)
 			}
 			jsonResponse, err := json.Marshal(response)
@@ -178,11 +198,14 @@ func (c *Controller) RecordDeleteByPhone(w http.ResponseWriter, r *http.Request)
 
 		// sending response
 		defer func() {
-			response := dto.Response{ErrorMessage: ""}
+			response := dto.Response{Error: "", Result: "delete"}
+
 			if err != nil {
-				response.ErrorMessage = err.Error()
+				response.Error = err.Error()
+				response.Result = "error"
 				logger.LogError(err)
 			}
+
 			jsonResponse, err := json.Marshal(response)
 			if err != nil {
 				logger.LogError(err)

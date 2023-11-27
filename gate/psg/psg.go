@@ -80,6 +80,11 @@ func (p *Psg) RecordsGet(r dto.Record) (records []dto.Record, err error) {
 func (psg *Psg) RecordAdd(r dto.Record) (num int64, err error) {
 	defer func() { err = errors.Wrap(err, "psg.RecordAdd()") }()
 
+	if !CheckAllFieldsIsFilled(r) {
+		err = errors.New("Not all record fields are filled")
+		return
+	}
+
 	query := `
 	INSERT INTO address_book 
 	(name, lastname, middlename, address, phone) 
@@ -114,6 +119,11 @@ func (p *Psg) RecordUpdate(r dto.Record) (err error) {
 
 	q, values, err := UpdateRecord(r)
 	if err != nil {
+		return
+	}
+
+	if len(values) < 2 {
+		err = errors.New("Not enough Fields to update record. Need something besides Phone")
 		return
 	}
 

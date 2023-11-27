@@ -25,6 +25,10 @@ type UpdateCond struct {
 	Value  any
 }
 
+func CheckAllFieldsIsFilled(r dto.Record) bool {
+	return r.Address != "" && r.LastName != "" && r.MiddleName != "" && r.Name != "" && r.Phone != ""
+}
+
 func UpdateRecord(r dto.Record) (statement string, values []any, err error) {
 	defer func() { err = gitErors.Wrap(err, "UpdateRecord") }()
 
@@ -139,7 +143,7 @@ func StructToFieldsValues(s any, tag string) (sqlFields []string, values []any, 
 	}
 
 	if rv.Kind() != reflect.Struct {
-		return nil, nil, errors.New(": s must be a struct")
+		return nil, nil, errors.New("s must be a struct")
 	}
 
 	for i := 0; i < rv.NumField(); i++ {
