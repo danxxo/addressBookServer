@@ -7,3 +7,19 @@ type Response struct {
 	Data   json.RawMessage `json:"data"`
 	Error  string          `json:"error"`
 }
+
+func (resp *Response) Wrap(result string, data json.RawMessage, err error) {
+	if err == nil {
+		resp.Error = ""
+	} else {
+		resp.Error = err.Error()
+	}
+	resp.Data = data
+	resp.Result = result
+}
+
+func (resp *Response) ErrorWrap(err error) {
+	resp.Result = "error"
+	resp.Error = err.Error()
+	resp.Data = nil
+}

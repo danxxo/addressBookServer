@@ -6,7 +6,6 @@ import (
 	errorLogger "addressBookServer/pkg/errorLogger"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -43,42 +42,34 @@ func (c *Controller) RecordAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method == "POST" {
-		var err error
+	response := dto.Response{}
 
-		// sending response
-		defer func() {
-			response := dto.Response{Error: "", Result: "add"}
+	defer responseWriteAndReturn(w, &response)
 
-			// handle errors that occur because of client
-			if err != nil {
-				response.Error = err.Error()
-				response.Result = "error"
-				logger.LogError(err)
-			}
-
-			jsonResponse, err := json.Marshal(response)
-
-			// Internal error
-			if err != nil {
-				logger.LogError(err)
-			}
-			w.Write(jsonResponse)
-		}()
-
-		rec := dto.Record{}
-		err = json.NewDecoder(r.Body).Decode(&rec)
-		if err != nil {
-			err = errors.Wrap(err, "stdhttp.RecordAdd()")
-			return
-		}
-
-		_, err = c.DB.RecordAdd(rec)
-		if err != nil {
-			err = errors.Wrap(err, "stdhttp.RecordAdd()")
-			return
-		}
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
 	}
+
+	rec := dto.Record{}
+	err = json.NewDecoder(r.Body).Decode(&rec)
+	if err != nil {
+		err = errors.Wrap(err, "stdhttp.RecordAdd()")
+		logger.LogError(err)
+		response.ErrorWrap(err)
+		return
+	}
+
+	_, err = c.DB.RecordAdd(rec)
+	if err != nil {
+		err = errors.Wrap(err, "stdhttp.RecordAdd()")
+		logger.LogError(err)
+		response.ErrorWrap(err)
+		return
+	}
+
+	response.Wrap("OK", nil, nil)
+
 }
 
 func (c *Controller) RecordsGet(w http.ResponseWriter, r *http.Request) {
@@ -90,51 +81,42 @@ func (c *Controller) RecordsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method == "POST" {
-		var err error
-		var records []dto.Record
+	response := dto.Response{}
 
-		// sending response
-		defer func() {
-			response := dto.Response{Error: "", Result: "get"}
+	defer responseWriteAndReturn(w, &response)
 
-			if err != nil {
-				response.Error = err.Error()
-				response.Result = "error"
-				logger.LogError(err)
-			}
-
-			data, err := json.Marshal(records)
-			if err != nil {
-				response.Error = err.Error()
-				response.Result = "error"
-				logger.LogError(err)
-			}
-
-			response.Data = data
-
-			jsonResponse, err := json.Marshal(response)
-			if err != nil {
-				logger.LogError(err)
-			}
-
-			w.Write(jsonResponse)
-		}()
-
-		rec := dto.Record{}
-		err = json.NewDecoder(r.Body).Decode(&rec)
-		if err != nil {
-			err = errors.Wrap(err, "stdhttp.RecordsGet()")
-			return
-		}
-
-		records, err = c.DB.RecordsGet(rec)
-		if err != nil {
-			err = errors.Wrap(err, "stdhttp.RecordsGet()")
-			return
-		}
-
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
 	}
+
+	rec := dto.Record{}
+	err = json.NewDecoder(r.Body).Decode(&rec)
+	if err != nil {
+		err = errors.Wrap(err, "stdhttp.RecordsGet()")
+		logger.LogError(err)
+		response.ErrorWrap(err)
+		return
+	}
+
+	records, err := c.DB.RecordsGet(rec)
+	if err != nil {
+		err = errors.Wrap(err, "stdhttp.RecordsGet()")
+		logger.LogError(err)
+		response.ErrorWrap(err)
+		return
+	}
+
+	recordsJSON, err := json.Marshal(&records)
+	if err != nil {
+		err = errors.Wrap(err, "stdhttp.RecordsGet()")
+		logger.LogError(err)
+		response.ErrorWrap(err)
+		return
+	}
+
+	response.Wrap("OK", recordsJSON, nil)
+
 }
 
 func (c *Controller) RecordUpdate(w http.ResponseWriter, r *http.Request) {
@@ -146,42 +128,36 @@ func (c *Controller) RecordUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method == "POST" {
-		var err error
+	response := dto.Response{}
 
-		// sending response
-		defer func() {
-			response := dto.Response{Error: "", Result: "update"}
+	defer responseWriteAndReturn(w, &response)
 
-			if err != nil {
-				response.Error = err.Error()
-				response.Result = "error"
-				logger.LogError(err)
-			}
-			jsonResponse, err := json.Marshal(response)
-			if err != nil {
-				logger.LogError(err)
-			}
-			w.Write(jsonResponse)
-		}()
-
-		// getting record from client
-		rec := dto.Record{}
-		err = json.NewDecoder(r.Body).Decode(&rec)
-		if err != nil {
-			err = errors.Wrap(err, "stdhttp.RecordUpdate()")
-			log.Println(err)
-			return
-		}
-
-		// making update on DB
-		err = c.DB.RecordUpdate(rec)
-		if err != nil {
-			err = errors.Wrap(err, "stdhttp.RecordUpdate()")
-			log.Println(err)
-			return
-		}
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
 	}
+
+	// getting record from client
+	rec := dto.Record{}
+	err = json.NewDecoder(r.Body).Decode(&rec)
+	if err != nil {
+		err = errors.Wrap(err, "stdhttp.RecordUpdate()")
+		logger.LogError(err)
+		response.ErrorWrap(err)
+		return
+	}
+
+	// making update on DB
+	err = c.DB.RecordUpdate(rec)
+	if err != nil {
+		err = errors.Wrap(err, "stdhttp.RecordUpdate()")
+		logger.LogError(err)
+		response.ErrorWrap(err)
+		return
+	}
+
+	response.Wrap("OK", nil, nil)
+
 }
 
 func (c *Controller) RecordDeleteByPhone(w http.ResponseWriter, r *http.Request) {
@@ -193,39 +169,41 @@ func (c *Controller) RecordDeleteByPhone(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if r.Method == "POST" {
-		var err error
+	response := dto.Response{}
 
-		// sending response
-		defer func() {
-			response := dto.Response{Error: "", Result: "delete"}
+	defer responseWriteAndReturn(w, &response)
 
-			if err != nil {
-				response.Error = err.Error()
-				response.Result = "error"
-				logger.LogError(err)
-			}
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
 
-			jsonResponse, err := json.Marshal(response)
-			if err != nil {
-				logger.LogError(err)
-			}
-			w.Write(jsonResponse)
-		}()
+	rec := dto.Record{}
 
-		rec := dto.Record{}
-		err = json.NewDecoder(r.Body).Decode(&rec)
-		if err != nil {
-			err = errors.Wrap(err, "stdhttp.RecordDeleteByPhone()")
-			return
-		}
+	err = json.NewDecoder(r.Body).Decode(&rec)
+	if err != nil {
+		err = errors.Wrap(err, "stdhttp.RecordDeleteByPhone()")
+		logger.LogError(err)
+		response.ErrorWrap(err)
+		return
+	}
 
-		recPhone := rec.Phone
+	recPhone := rec.Phone
 
-		err = c.DB.RecordDeleteByPhone(recPhone)
-		if err != nil {
-			err = errors.Wrap(err, "stdhttp.RecordDeleteByPhone()")
-			return
-		}
+	err = c.DB.RecordDeleteByPhone(recPhone)
+	if err != nil {
+		err = errors.Wrap(err, "stdhttp.RecordDeleteByPhone()")
+		logger.LogError(err)
+		response.ErrorWrap(err)
+		return
+	}
+
+	response.Wrap("OK", nil, nil)
+}
+
+func responseWriteAndReturn(w http.ResponseWriter, response *dto.Response) {
+	errEncode := json.NewEncoder(w).Encode(response)
+	if errEncode != nil {
+		w.WriteHeader(http.StatusPaymentRequired)
 	}
 }
