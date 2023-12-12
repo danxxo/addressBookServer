@@ -136,6 +136,7 @@ func (p *Psg) RecordUpdate(r dto.Record) (err error) {
 	return nil
 }
 
+// FIXME: все ресиверы должны быть одного названия. Нельзя писать psg, а потом p.
 // RecordDeleteByPhone удаляет запись из базы данных по номеру телефона.
 func (psg *Psg) RecordDeleteByPhone(phone string) (err error) {
 	defer func() { err = errors.Wrap(err, "psg.RecordDeleteByPhone()") }()

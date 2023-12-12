@@ -54,6 +54,8 @@ func (c *Controller) RecordAdd(w http.ResponseWriter, r *http.Request) {
 	rec := dto.Record{}
 	err = json.NewDecoder(r.Body).Decode(&rec)
 	if err != nil {
+		// FIXME: errors wrap врапит только стороку "stdhttp.RecordAdd()"
+		// Строк ошибки в логах должна выглядеть так: "<error_text>: stdhttp.RecordAdd(): json.NewDecoder(r.Body).Decode(&rec)"
 		err = errors.Wrap(err, "stdhttp.RecordAdd()")
 		logger.LogError(err)
 		response.ErrorWrap(err)
@@ -74,6 +76,7 @@ func (c *Controller) RecordAdd(w http.ResponseWriter, r *http.Request) {
 
 func (c *Controller) RecordsGet(w http.ResponseWriter, r *http.Request) {
 
+	// FIXME: во всех методах контроллера, где используется логгер, логгер должен быть создан в самом контроллере, а не в методе.
 	// creating logger
 	logger, err := errorLogger.NewErrorLogger(".log")
 	if err != nil {
