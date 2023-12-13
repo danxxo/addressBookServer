@@ -15,12 +15,13 @@ func NewErrorLogger(filename string) (*ErrorLogger, error) {
 		return nil, err
 	}
 
+	errorLogger := ErrorLogger{file: file}
+	log.SetOutput(errorLogger.file)
+
 	return &ErrorLogger{file}, nil
 }
 
-// FIXME: log.SetOutput(el.file) не должен быть в этой функции. Он должен быть в конструкторе.
 func (el *ErrorLogger) LogError(err error) {
-	log.SetOutput(el.file)
 	log.Println(err)
 }
 

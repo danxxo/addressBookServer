@@ -17,7 +17,7 @@ type Psg struct {
 }
 
 func NewPsg(dburl string, login, pass string) (psg *Psg, err error) {
-	defer func() { err = errors.Wrap(err, "postgres.NewPsg()") }()
+	defer func() { err = errors.Wrap(err, "postgres.NewPsg(dburl string, login, pass string)") }()
 
 	psg = &Psg{}
 	psg.conn, err = parseConnectionString(dburl, login, pass)
@@ -34,7 +34,7 @@ func NewPsg(dburl string, login, pass string) (psg *Psg, err error) {
 }
 
 func (p *Psg) RecordsGet(r dto.Record) (records []dto.Record, err error) {
-	defer func() { err = errors.Wrap(err, "psg.RecordsGet()") }()
+	defer func() { err = errors.Wrap(err, "psg.RecordsGet(r dto.Record)") }()
 
 	if r.Phone != "" {
 		r.Phone, err = phoneHelper.PhoneNormalize(r.Phone)
@@ -78,7 +78,7 @@ func (p *Psg) RecordsGet(r dto.Record) (records []dto.Record, err error) {
 }
 
 func (psg *Psg) RecordAdd(r dto.Record) (num int64, err error) {
-	defer func() { err = errors.Wrap(err, "psg.RecordAdd()") }()
+	defer func() { err = errors.Wrap(err, "psg.RecordAdd(r dto.Record)") }()
 
 	if !CheckAllFieldsIsFilled(r) {
 		err = errors.New("Not all record fields are filled")
@@ -105,7 +105,7 @@ func (psg *Psg) RecordAdd(r dto.Record) (num int64, err error) {
 
 // RecordUpdate обновляет существующую запись в базе данных по номеру телефона.
 func (p *Psg) RecordUpdate(r dto.Record) (err error) {
-	defer func() { err = errors.Wrap(err, "psg.RecordUpdate()") }()
+	defer func() { err = errors.Wrap(err, "psg.RecordUpdate(r dto.Record)") }()
 
 	if r.Phone == "" {
 		err = errors.New("Phone field is required")
@@ -139,7 +139,7 @@ func (p *Psg) RecordUpdate(r dto.Record) (err error) {
 // FIXME: все ресиверы должны быть одного названия. Нельзя писать psg, а потом p.
 // RecordDeleteByPhone удаляет запись из базы данных по номеру телефона.
 func (psg *Psg) RecordDeleteByPhone(phone string) (err error) {
-	defer func() { err = errors.Wrap(err, "psg.RecordDeleteByPhone()") }()
+	defer func() { err = errors.Wrap(err, "psg.RecordDeleteByPhone(phone string)") }()
 
 	phone, err = phoneHelper.PhoneNormalize(phone)
 	if err != nil {
@@ -159,16 +159,16 @@ func (psg *Psg) RecordDeleteByPhone(phone string) (err error) {
 }
 
 func parseConnectionString(dburl, user, password string) (db *pgxpool.Pool, err error) {
-	defer func() { errors.Wrap(err, "psg.parseConnectionString") }()
+	defer func() { errors.Wrap(err, "psg.parseConnectionString(dburl, user, password string)") }()
 
 	var u *url.URL
 	if u, err = url.Parse(dburl); err != nil {
-		return nil, errors.Wrap(err, "ошибка парсинга url строки")
+		return nil, errors.Wrap(err, "parseConnectionString(dburl, user, password string): url.Parse(dburl)")
 	}
 	u.User = url.UserPassword(user, password)
 	db, err = pgxpool.New(context.Background(), u.String())
 	if err != nil {
-		return nil, errors.Wrap(err, "ошибка соединения с базой данных")
+		return nil, errors.Wrap(err, "parseConnectionString(dburl, user, password string): pgxpool.New(context.Background(), u.String())")
 	}
 	return
 }
