@@ -17,9 +17,3 @@ func (resp *Response) Wrap(result string, data json.RawMessage, err error) {
 	resp.Data = data
 	resp.Result = result
 }
-
-func (resp *Response) ErrorWrap(err error) {
-	resp.Result = "error"
-	resp.Error = err.Error()
-	resp.Data = nil
-}

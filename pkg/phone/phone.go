@@ -8,7 +8,7 @@ import (
 )
 
 func PhoneNormalize(phone string) (normalizedPhone string, err error) {
-	defer func() { err = errors.Wrap(err, "PhoneNormalize()") }()
+	defer func() { err = errors.Wrap(err, "PhoneNormalize(phone string)") }()
 	var builder strings.Builder
 	builder.Grow(11)
 	builder.WriteString("7")

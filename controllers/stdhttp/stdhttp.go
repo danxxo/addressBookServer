@@ -5,24 +5,25 @@ import (
 	"addressBookServer/models/dto"
 	errorLogger "addressBookServer/pkg/errorLogger"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/pkg/errors"
 )
 
 type Controller struct {
-	DB  *psg.Psg
-	Srv *http.Server
+	DB     *psg.Psg
+	Srv    *http.Server
+	Logger *errorLogger.ErrorLogger
 }
 
-func NewController(addr string, db *psg.Psg) *Controller {
+func NewController(addr string, db *psg.Psg, logger *errorLogger.ErrorLogger) *Controller {
 
 	controller := &Controller{
 		Srv: &http.Server{
 			Addr: addr,
 		},
-		DB: db,
+		DB:     db,
+		Logger: logger,
 	}
 
 	http.HandleFunc("/add", controller.RecordAdd)
@@ -35,13 +36,6 @@ func NewController(addr string, db *psg.Psg) *Controller {
 
 func (c *Controller) RecordAdd(w http.ResponseWriter, r *http.Request) {
 
-	// creating logger
-	logger, err := errorLogger.NewErrorLogger(".log")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
 	response := dto.Response{}
 
 	defer responseWriteAndReturn(w, &response)
@@ -52,19 +46,19 @@ func (c *Controller) RecordAdd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rec := dto.Record{}
-	err = json.NewDecoder(r.Body).Decode(&rec)
+	err := json.NewDecoder(r.Body).Decode(&rec)
 	if err != nil {
-		err = errors.Wrap(err, "stdhttp.RecordAdd()")
-		logger.LogError(err)
-		response.ErrorWrap(err)
+		err = errors.Wrap(err, "stdhttp.RecordAdd(): json.NewDecoder(r.Body).Decode(&rec)")
+		c.Logger.LogError(err)
+		response.Wrap("error", nil, err)
 		return
 	}
 
 	_, err = c.DB.RecordAdd(rec)
 	if err != nil {
-		err = errors.Wrap(err, "stdhttp.RecordAdd()")
-		logger.LogError(err)
-		response.ErrorWrap(err)
+		err = errors.Wrap(err, "stdhttp.RecordAdd(): c.DB.RecordAdd(rec)")
+		c.Logger.LogError(err)
+		response.Wrap("error", nil, err)
 		return
 	}
 
@@ -73,14 +67,6 @@ func (c *Controller) RecordAdd(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) RecordsGet(w http.ResponseWriter, r *http.Request) {
-
-	// creating logger
-	logger, err := errorLogger.NewErrorLogger(".log")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
 	response := dto.Response{}
 
 	defer responseWriteAndReturn(w, &response)
@@ -91,27 +77,27 @@ func (c *Controller) RecordsGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rec := dto.Record{}
-	err = json.NewDecoder(r.Body).Decode(&rec)
+	err := json.NewDecoder(r.Body).Decode(&rec)
 	if err != nil {
-		err = errors.Wrap(err, "stdhttp.RecordsGet()")
-		logger.LogError(err)
-		response.ErrorWrap(err)
+		err = errors.Wrap(err, "stdhttp.RecordsGet(): json.NewDecoder(r.Body).Decode(&rec)")
+		c.Logger.LogError(err)
+		response.Wrap("error", nil, err)
 		return
 	}
 
 	records, err := c.DB.RecordsGet(rec)
 	if err != nil {
-		err = errors.Wrap(err, "stdhttp.RecordsGet()")
-		logger.LogError(err)
-		response.ErrorWrap(err)
+		err = errors.Wrap(err, "stdhttp.RecordsGet(): c.DB.RecordsGet(rec)")
+		c.Logger.LogError(err)
+		response.Wrap("error", nil, err)
 		return
 	}
 
 	recordsJSON, err := json.Marshal(&records)
 	if err != nil {
-		err = errors.Wrap(err, "stdhttp.RecordsGet()")
-		logger.LogError(err)
-		response.ErrorWrap(err)
+		err = errors.Wrap(err, "stdhttp.RecordsGet(): json.Marshal(&records)")
+		c.Logger.LogError(err)
+		response.Wrap("error", nil, err)
 		return
 	}
 
@@ -120,13 +106,6 @@ func (c *Controller) RecordsGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) RecordUpdate(w http.ResponseWriter, r *http.Request) {
-
-	// creating logger
-	logger, err := errorLogger.NewErrorLogger(".log")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
 
 	response := dto.Response{}
 
@@ -139,20 +118,20 @@ func (c *Controller) RecordUpdate(w http.ResponseWriter, r *http.Request) {
 
 	// getting record from client
 	rec := dto.Record{}
-	err = json.NewDecoder(r.Body).Decode(&rec)
+	err := json.NewDecoder(r.Body).Decode(&rec)
 	if err != nil {
-		err = errors.Wrap(err, "stdhttp.RecordUpdate()")
-		logger.LogError(err)
-		response.ErrorWrap(err)
+		err = errors.Wrap(err, "stdhttp.RecordUpdate(): json.NewDecoder(r.Body).Decode(&rec)")
+		c.Logger.LogError(err)
+		response.Wrap("error", nil, err)
 		return
 	}
 
 	// making update on DB
 	err = c.DB.RecordUpdate(rec)
 	if err != nil {
-		err = errors.Wrap(err, "stdhttp.RecordUpdate()")
-		logger.LogError(err)
-		response.ErrorWrap(err)
+		err = errors.Wrap(err, "stdhttp.RecordUpdate(): c.DB.RecordUpdate(rec)")
+		c.Logger.LogError(err)
+		response.Wrap("error", nil, err)
 		return
 	}
 
@@ -161,13 +140,6 @@ func (c *Controller) RecordUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) RecordDeleteByPhone(w http.ResponseWriter, r *http.Request) {
-
-	// creating logger
-	logger, err := errorLogger.NewErrorLogger(".log")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
 
 	response := dto.Response{}
 
@@ -180,11 +152,11 @@ func (c *Controller) RecordDeleteByPhone(w http.ResponseWriter, r *http.Request)
 
 	rec := dto.Record{}
 
-	err = json.NewDecoder(r.Body).Decode(&rec)
+	err := json.NewDecoder(r.Body).Decode(&rec)
 	if err != nil {
-		err = errors.Wrap(err, "stdhttp.RecordDeleteByPhone()")
-		logger.LogError(err)
-		response.ErrorWrap(err)
+		err = errors.Wrap(err, "stdhttp.RecordDeleteByPhone(): json.NewDecoder(r.Body).Decode(&rec)")
+		c.Logger.LogError(err)
+		response.Wrap("error", nil, err)
 		return
 	}
 
@@ -192,9 +164,9 @@ func (c *Controller) RecordDeleteByPhone(w http.ResponseWriter, r *http.Request)
 
 	err = c.DB.RecordDeleteByPhone(recPhone)
 	if err != nil {
-		err = errors.Wrap(err, "stdhttp.RecordDeleteByPhone()")
-		logger.LogError(err)
-		response.ErrorWrap(err)
+		err = errors.Wrap(err, "stdhttp.RecordDeleteByPhone(): c.DB.RecordDeleteByPhone(recPhone)")
+		c.Logger.LogError(err)
+		response.Wrap("error", nil, err)
 		return
 	}
 
